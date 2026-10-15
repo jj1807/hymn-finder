@@ -1,5 +1,5 @@
-// Hymnal Finder offline helper: keeps the app and the PDF reader on the device.
-const VERSION = 'hymnal-finder-v6';
+// Hymn Finder offline helper: keeps the app and the PDF reader on the device.
+const VERSION = 'hymnal-finder-v8';
 const APP = ['./', 'index.html', 'maps.js', 'manifest.webmanifest', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png'];
 const LIBS = [
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',

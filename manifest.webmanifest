@@ -1,6 +1,6 @@
 {
-  "name": "Hymnal Finder",
-  "short_name": "Hymnals",
+  "name": "Hymn Finder",
+  "short_name": "Hymn Finder",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
