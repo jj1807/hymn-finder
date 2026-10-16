@@ -32,7 +32,8 @@
 *,*::before,*::after{box-sizing:border-box}
 html,body{height:100%}
 /* no double-tap zoom: quick repeated taps (like 122) stay taps */
-html,body,button,input,.pad,.app,.vbar,.drawer{touch-action:manipulation}
+*{touch-action:manipulation}
+.pages{touch-action:pan-x pan-y pinch-zoom}
 :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.45;-webkit-tap-highlight-color:transparent;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
@@ -75,7 +76,9 @@ h2{font-size:.78rem;text-transform:uppercase;letter-spacing:.12em;color:var(--mu
 .num.empty{color:var(--muted);font-size:1.3rem;font-family:var(--sans)}
 .where{color:var(--muted);font-size:.92rem;min-width:0}
 .where.bad{color:var(--warn)}
-.ttl{font-family:var(--serif);font-size:1.05rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.ttl{font-family:var(--serif);font-size:1.05rem;line-height:1.25;min-width:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.readout .meta2{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:4px}
+.keychip{font-weight:700;font-size:.9rem;color:var(--gilt);border:1px solid var(--gilt);border-radius:6px;padding:1px 8px;white-space:nowrap}
 .search{position:relative;margin-bottom:10px}
 .search input{width:100%;font-size:1.05rem;padding:12px 14px;border:2px solid var(--line);border-radius:12px;background:var(--surface);min-height:50px}
 .search input:focus{border-color:var(--gilt);outline:none}
@@ -240,7 +243,7 @@ h2{font-size:.78rem;text-transform:uppercase;letter-spacing:.12em;color:var(--mu
 
 <div class="sheetwrap" id="setupWrap" hidden>
   <div class="setup" role="dialog" aria-labelledby="setupTitle">
-    <div class="setup-head"><h2 id="setupTitle">Set up hymnals</h2><button class="btn gilt" id="closeSetup" type="button">Done</button></div>
+    <div class="setup-head"><h2 id="setupTitle">Set up hymnals <small style="font:500 .8rem var(--sans);color:var(--muted)">version 9</small></h2><button class="btn gilt" id="closeSetup" type="button">Done</button></div>
     <p class="hint">Add one PDF per hymnal. Your three hymnals are recognized automatically, and every hymn number is already matched to its page. PDFs are saved on this iPad only, inside this app, and are never uploaded. Deleting the app's Home Screen icon deletes them too, so keep the PDFs in the Files app as a backup.</p>
     <div id="setupBooks" style="display:flex;flex-direction:column;gap:16px"></div>
   </div>
@@ -394,7 +397,7 @@ async function renderPage(b, p, bw, bh){
 /* ---------- number entry (used on the home screen and in the viewer drawer) ---------- */
 function entryHTML(prefix){
   return `<div class="search"><input type="search" id="${prefix}Search" placeholder="Search by title" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Search songs by title"><ul class="results" id="${prefix}Results" hidden></ul></div>
-  <div class="readout" aria-live="polite"><div class="row"><span class="num empty" id="${prefix}Num">Type a number</span><span class="ttl" id="${prefix}Ttl"></span></div><span class="where" id="${prefix}Where"></span></div>
+  <div class="readout" aria-live="polite"><div class="row"><span class="num empty" id="${prefix}Num">Type a number</span><span class="ttl" id="${prefix}Ttl"></span></div><div class="meta2"><span class="where" id="${prefix}Where"></span><span class="keychip" id="${prefix}Key" hidden></span></div></div>
   <div class="pad">${['1','2','3','4','5','6','7','8','9','clear','0','del'].map(k =>
     `<button class="key${k==='clear'?' fn':''}" type="button" data-k="${k}" ${k==='del'?'aria-label="Delete last digit"':''}>${k==='clear'?'Clear':k==='del'?'⌫':k}</button>`).join('')}</div>
   <div class="actions"><button class="btn gilt" type="button" data-act="open" disabled>Open hymn</button><button class="btn" type="button" data-act="add" disabled>Add</button></div>`;
@@ -427,7 +430,9 @@ function renderReadouts(){
       num.textContent = entry; num.classList.remove('empty');
       where.className = 'where' + (c.ok ? '' : ' bad');
       where.textContent = c.ok ? `${b.name} · page ${c.p}` : c.msg;
-      ttl.textContent = c.ok ? [titleFor(b, +entry), keyFor(b, +entry) && 'Key of ' + keyFor(b, +entry)].filter(Boolean).join(' · ') : '';
+      ttl.textContent = c.ok ? titleFor(b, +entry) : '';
+      const kc = $('#'+pre+'Key'), kk = c.ok ? keyFor(b, +entry) : '';
+      kc.hidden = !kk; kc.textContent = kk ? 'Key of ' + kk : '';
     }
     open.disabled = !c.ok;
     const dtab = pre === 'd' ? dTab : tab;
@@ -642,9 +647,14 @@ let rz; window.addEventListener('resize', () => { if (view.open) { clearTimeout(
 
 // Belt and braces for older iPads: never let a quick second tap on a control zoom the page.
 let lastTouch = 0;
+document.addEventListener('dblclick', e => { if (!e.target.closest('#pages')) e.preventDefault(); }, {passive: false});
 document.addEventListener('touchend', e => {
   const now = Date.now();
-  if (now - lastTouch < 350 && e.target.closest('button')) { e.preventDefault(); e.target.closest('button').click(); }
+  const inMusic = e.target.closest('#pages');
+  if (now - lastTouch < 400 && !inMusic && !e.target.closest('input')) {
+    e.preventDefault();                                  // stop the zoom wherever the second tap lands
+    const btn = e.target.closest('button'); if (btn && !btn.disabled) btn.click();
+  }
   lastTouch = now;
 }, {passive: false});
 
