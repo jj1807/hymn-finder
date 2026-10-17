@@ -7,8 +7,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Hymn Finder">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#1F3A68">
-<title>Hymn Finder</title>
+<meta name="theme-color" content="#11151C">
+<title>Beavertown Church Hymn Finder</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="icon-192.png">
@@ -19,16 +19,13 @@
 <style>
 /* Layout: a pianist's console — hymnal shelf | number pad | service lists; music opens full screen on a dark music stand. */
 :root{
-  --bg:#EDEFF3; --surface:#FFFFFF; --ink:#18202C; --muted:#5A6474; --line:#D3D8E1;
-  --gilt:#9C6F22; --gilt-ink:#FFFFFF; --gilt-soft:#F3E9D6; --stage:#262B33; --stage-ink:#E9ECF1; --warn:#9A3B12;
-  --b1:#7A1F2B; --b2:#1F3A68; --b3:#2D5A3E; --b4:#5B3D6C;
+  /* always dark, easy on the eyes in a dim sanctuary */
+  --bg:#11151C; --surface:#1A2029; --ink:#E7EAF0; --muted:#9AA3B2; --line:#2C3441;
+  --gilt:#D4A955; --gilt-ink:#1A1408; --gilt-soft:#2E2718; --stage:#0B0E13; --stage-ink:#E9ECF1; --warn:#F0956A;
+  --b1:#B34B5A; --b2:#5078BC; --b3:#4F9068; --b4:#9070A6; color-scheme:dark;
   --serif:"Libre Caslon Text", Georgia, "Times New Roman", serif;
   --sans:"Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
-@media (prefers-color-scheme: dark){ :root{
-  --bg:#11151C; --surface:#1A2029; --ink:#E7EAF0; --muted:#9AA3B2; --line:#2C3441;
-  --gilt:#D4A955; --gilt-ink:#1A1408; --gilt-soft:#2E2718; --stage:#0B0E13; --stage-ink:#E9ECF1; --warn:#F0956A;
-  --b1:#B34B5A; --b2:#5078BC; --b3:#4F9068; --b4:#9070A6; color-scheme:dark } }
 *,*::before,*::after{box-sizing:border-box}
 html,body{height:100%}
 /* no double-tap zoom: quick repeated taps (like 122) stay taps */
@@ -44,9 +41,10 @@ button:disabled{opacity:.4;cursor:not-allowed}
 :focus-visible{outline:3px solid var(--gilt);outline-offset:2px}
 .app{max-width:1280px;margin:0 auto;padding-block:18px 28px;display:flex;flex-direction:column;gap:18px}
 header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-h1{font-family:var(--serif);font-weight:700;font-size:1.75rem;margin:0;text-wrap:balance}
+h1{font-family:var(--serif);font-weight:700;font-size:clamp(1rem,4.4vw,1.6rem);margin:0;white-space:nowrap}
 h2{font-size:.78rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:0 0 10px;font-weight:600}
-.hdr-right{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.foot{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:24px;padding-top:12px;border-top:1px solid var(--line);font-size:.85rem}
+.linkbtn{border:0;background:transparent;color:var(--muted);font-size:.85rem;text-decoration:underline;padding:8px 0;min-height:36px}
 .offline{font-size:.85rem;color:var(--muted)}
 .offline.ok{color:var(--b3)}
 .btn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 16px;font-weight:600;min-height:44px}
@@ -70,6 +68,8 @@ h2{font-size:.78rem;text-transform:uppercase;letter-spacing:.12em;color:var(--mu
 .book small.sample{color:var(--warn)}
 
 /* Number pad */
+.readout.ready{cursor:pointer;border-color:var(--gilt)}
+.readout.ready:active{background:var(--gilt-soft)}
 .readout{background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:10px 16px;display:flex;flex-direction:column;justify-content:center;min-height:96px}
 .readout .row{display:flex;align-items:baseline;gap:12px;min-width:0}
 .num{font-family:var(--serif);font-size:3.2rem;line-height:1;font-variant-numeric:tabular-nums}
@@ -101,7 +101,7 @@ h2{font-size:.78rem;text-transform:uppercase;letter-spacing:.12em;color:var(--mu
 
 /* Lists */
 .tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:10px}
-.tab{flex:1;border:0;background:transparent;border-radius:9px;padding:9px 4px;font-weight:600;font-size:.92rem;color:var(--muted);min-height:44px;white-space:nowrap}
+.tab{flex:1 1 auto;border:0;background:transparent;border-radius:9px;padding:9px 6px;font-weight:600;font-size:.88rem;color:var(--muted);min-height:44px;white-space:nowrap}
 .tab[aria-selected="true"]{background:var(--gilt);color:var(--gilt-ink)}
 .tab .ct{font-variant-numeric:tabular-nums;opacity:.8;font-weight:500}
 .items{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
@@ -189,8 +189,7 @@ h2{font-size:.78rem;text-transform:uppercase;letter-spacing:.12em;color:var(--mu
 <body>
 <div class="app">
   <header>
-    <h1>Hymn Finder</h1>
-    <div class="hdr-right"><span class="offline" id="offline" aria-live="polite"></span><button class="btn" id="openSetup" type="button">Set up hymnals</button></div>
+    <h1>Beavertown Church Hymn Finder</h1>
   </header>
   <div class="notice" id="sampleNote" hidden>
     <span id="sampleText">Add your hymnal PDFs in Set up. Until then, hymns open on sample pages.</span>
@@ -212,6 +211,7 @@ h2{font-size:.78rem;text-transform:uppercase;letter-spacing:.12em;color:var(--mu
       <div class="listfoot" id="listfoot"></div>
     </section>
   </div>
+  <footer class="foot"><span class="offline" id="offline" aria-live="polite"></span><button class="linkbtn" id="openSetup" type="button">Set up hymnals</button></footer>
 </div>
 
 <div class="viewer" id="viewer" hidden>
@@ -224,7 +224,7 @@ h2{font-size:.78rem;text-transform:uppercase;letter-spacing:.12em;color:var(--mu
     <button class="vb" id="vTwo" type="button" aria-pressed="false">2 pages</button>
     <button class="vb" id="vFit" type="button" aria-pressed="false">Fit width</button>
     <button class="vb" id="vFull" type="button">Full screen</button>
-    <button class="vb" id="vSongs" type="button" aria-pressed="false">Songs</button>
+    <button class="vb" id="vSongs" type="button" aria-pressed="false">Find Hymn</button>
     <button class="vb next" id="vNextSong" type="button" hidden></button>
   </div>
   <div class="stagewrap">
@@ -243,7 +243,7 @@ h2{font-size:.78rem;text-transform:uppercase;letter-spacing:.12em;color:var(--mu
 
 <div class="sheetwrap" id="setupWrap" hidden>
   <div class="setup" role="dialog" aria-labelledby="setupTitle">
-    <div class="setup-head"><h2 id="setupTitle">Set up hymnals <small style="font:500 .8rem var(--sans);color:var(--muted)">version 9</small></h2><button class="btn gilt" id="closeSetup" type="button">Done</button></div>
+    <div class="setup-head"><h2 id="setupTitle">Set up hymnals <small style="font:500 .8rem var(--sans);color:var(--muted)">version 10</small></h2><button class="btn gilt" id="closeSetup" type="button">Done</button></div>
     <p class="hint">Add one PDF per hymnal. Your three hymnals are recognized automatically, and every hymn number is already matched to its page. PDFs are saved on this iPad only, inside this app, and are never uploaded. Deleting the app's Home Screen icon deletes them too, so keep the PDFs in the Files app as a backup.</p>
     <div id="setupBooks" style="display:flex;flex-direction:column;gap:16px"></div>
   </div>
@@ -259,7 +259,7 @@ const SPINES = ['b1','b2','b3','b4'];
 const SAMPLE_PAGES = 900;
 const LISTS = [
   {id:'prelude', name:'Prelude', add:'Add to Prelude', empty:'Songs to play before the service. Type a number, pick the hymnal, then tap “Add to Prelude”.'},
-  {id:'leader', name:'Songs', add:'Add to Songs', empty:'The song leader’s songs, in order. Type a number, pick the hymnal, then tap “Add to Songs”.'},
+  {id:'leader', name:'Congregational', add:'Add to Congregational', empty:'The song leader’s congregational songs, in order. Type a number, pick the hymnal, then tap “Add to Congregational”.'},
   {id:'offertory', name:'Offertory', add:'Add to Offertory', empty:'Offertory choices to pick from. These stay until you remove them.'},
   {id:'recent', name:'Recent', empty:'Hymns you open show up here.'}
 ];
@@ -397,10 +397,10 @@ async function renderPage(b, p, bw, bh){
 /* ---------- number entry (used on the home screen and in the viewer drawer) ---------- */
 function entryHTML(prefix){
   return `<div class="search"><input type="search" id="${prefix}Search" placeholder="Search by title" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Search songs by title"><ul class="results" id="${prefix}Results" hidden></ul></div>
-  <div class="readout" aria-live="polite"><div class="row"><span class="num empty" id="${prefix}Num">Type a number</span><span class="ttl" id="${prefix}Ttl"></span></div><div class="meta2"><span class="where" id="${prefix}Where"></span><span class="keychip" id="${prefix}Key" hidden></span></div></div>
+  <div class="readout" role="button" tabindex="0" aria-label="Open this hymn" aria-live="polite"><div class="row"><span class="num empty" id="${prefix}Num">Type a number</span><span class="ttl" id="${prefix}Ttl"></span></div><div class="meta2"><span class="where" id="${prefix}Where"></span><span class="keychip" id="${prefix}Key" hidden></span></div></div>
   <div class="pad">${['1','2','3','4','5','6','7','8','9','clear','0','del'].map(k =>
     `<button class="key${k==='clear'?' fn':''}" type="button" data-k="${k}" ${k==='del'?'aria-label="Delete last digit"':''}>${k==='clear'?'Clear':k==='del'?'⌫':k}</button>`).join('')}</div>
-  <div class="actions"><button class="btn gilt" type="button" data-act="open" disabled>Open hymn</button><button class="btn" type="button" data-act="add" disabled>Add</button></div>`;
+  <div class="actions"><button class="btn gilt" type="button" data-act="open" disabled>Open Hymn</button><button class="btn" type="button" data-act="add" disabled>Add</button></div>`;
 }
 $('#mainEntry').innerHTML = entryHTML('m');
 $('#drawerEntry').innerHTML = entryHTML('d');
@@ -425,13 +425,15 @@ function renderReadouts(){
     const num = $('#'+pre+'Num'), where = $('#'+pre+'Where'), ttl = $('#'+pre+'Ttl');
     const root = num.closest('.entry');
     const open = root.querySelector('[data-act=open]'), add = root.querySelector('[data-act=add]');
-    if (!entry) { num.textContent = 'Type a number'; num.classList.add('empty'); where.textContent = b.name; where.className = 'where'; ttl.textContent = ''; }
+    const kc = $('#'+pre+'Key');
+    num.closest('.readout').classList.toggle('ready', !!c.ok);
+    if (!entry) { num.textContent = 'Type a number'; num.classList.add('empty'); where.textContent = b.name; where.className = 'where'; ttl.textContent = ''; kc.hidden = true; kc.textContent = ''; }
     else {
       num.textContent = entry; num.classList.remove('empty');
       where.className = 'where' + (c.ok ? '' : ' bad');
-      where.textContent = c.ok ? `${b.name} · page ${c.p}` : c.msg;
+      where.textContent = c.ok ? b.name : c.msg;
       ttl.textContent = c.ok ? titleFor(b, +entry) : '';
-      const kc = $('#'+pre+'Key'), kk = c.ok ? keyFor(b, +entry) : '';
+      const kk = c.ok ? keyFor(b, +entry) : '';
       kc.hidden = !kk; kc.textContent = kk ? 'Key of ' + kk : '';
     }
     open.disabled = !c.ok;
@@ -477,6 +479,7 @@ for (const pre of ['m','d']) {
 }
 
 document.querySelectorAll('.entry').forEach(root => root.addEventListener('click', e => {
+  if (e.target.closest('.readout')) { if (check().ok) openHymn(sel, +entry, null, -1); return; }   // tap the hymn display to open it
   const k = e.target.closest('[data-k]'); if (k) { press(k.dataset.k); return; }
   const a = e.target.closest('[data-act]'); if (!a || !check().ok) return;
   const inDrawer = root.id === 'drawerEntry';
@@ -653,7 +656,8 @@ document.addEventListener('touchend', e => {
   const inMusic = e.target.closest('#pages');
   if (now - lastTouch < 400 && !inMusic && !e.target.closest('input')) {
     e.preventDefault();                                  // stop the zoom wherever the second tap lands
-    const btn = e.target.closest('button'); if (btn && !btn.disabled) btn.click();
+    const t = e.target.closest('button,[role=button]') || e.target;     // still count the tap itself
+    if (!t.disabled) t.click();
   }
   lastTouch = now;
 }, {passive: false});
